@@ -1,0 +1,25 @@
+Description: >
+  Template for build bucket S3
+
+Parameters:
+  BucketS3Name:
+    Description: Name of the bucket
+    Type: String
+
+Resources:
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketS3Name
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+
+Outputs:
+  BucketName:
+    Value: !Ref 'S3Bucket'
+    Description: Name of S3 bucket
+
+  WebsiteURL:
+    Value: !GetAtt 'S3Bucket.WebsiteURL'
+    Description: Bucket website endpoint

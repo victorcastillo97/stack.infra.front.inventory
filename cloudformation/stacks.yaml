@@ -1,0 +1,12 @@
+Parameters:
+  BucketS3Name:
+    Description: Name of the bucket
+    Type: String
+
+Resources:
+  BucketS3:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "./templates/bucket_website.yaml"
+      Parameters:
+        BucketS3Name: !Ref BucketS3Name
