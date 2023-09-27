@@ -1,0 +1,75 @@
+Parameters:
+  DomainName:
+    Description: The domain name for the origin.
+    Type: String
+
+  IdOrigin:
+    Description: A unique identifier for the origin. This value must be unique within the distribution. 
+    Type: String
+    Default: ''
+
+  CDNOriginAccessControlId:
+    Description: The unique identifier of an origin access control for this origin.
+    Type: String
+
+  EnabledCdn:
+    Description: From this field, you can enable or disable the selected distribution.
+    Type: String
+    Default: true
+
+  DefaultRootObjectCdn:
+    Description: The object that you want CloudFront to request from your origin
+    Type: String
+    Default: index.html
+
+  HttpVersionCdn:
+    Description: Specify the maximum HTTP version(s) that you want viewers to use to communicate with CloudFront
+    Type: String
+    Default: http2
+
+  AllowedMethodsCache:
+    Description: A complex type that controls which HTTP methods CloudFront processes and forwards to your Amazon S3 bucket or your custom origin.
+    Type: String
+    Default: 'GET,HEAD'
+
+  ViewerProtocolPolicyCache:
+    Description: El protocolo que los espectadores pueden usar para acceder a los archivos en el origen especificado TargetOriginId.
+    Type: String
+    Default: allow-all
+
+  CachePolicyId:
+    Description: The unique identifier of the cache policy that is attached to the default cache behavior.
+    Type: String
+
+
+Conditions:
+  NotValueIdOrigin: !Equals ['', !Ref IdOrigin]
+
+Resources:
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !Ref DomainName
+            Id: !If [ NotValueIdOrigin, !Ref DomainName, !Ref IdOrigin]
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !Ref CDNOriginAccessControlId
+        Enabled: !Ref EnabledCdn
+        DefaultRootObject: !Ref DefaultRootObjectCdn
+        HttpVersion: !Ref HttpVersionCdn
+        DefaultCacheBehavior:
+          AllowedMethods: 
+            Fn::Split:
+              - ","
+              - !Ref AllowedMethodsCache
+          Compress: true
+          TargetOriginId: !If [ NotValueIdOrigin, !Ref DomainName, !Ref IdOrigin]
+          ViewerProtocolPolicy: !Ref ViewerProtocolPolicyCache
+          CachePolicyId: !Ref CachePolicyId
+
+Outputs:
+  Id:
+    Value: !Ref CloudFrontDistribution
+    Description: The id of the CloudFront

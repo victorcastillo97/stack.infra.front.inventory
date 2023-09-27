@@ -1,0 +1,34 @@
+Parameters:
+  NameCDNOriginACL:
+    Description: A name to identify the origin access control
+    Type: String
+  
+  DescriptionCDNOAC:
+    Description: A description of the origin access control
+    Type: String
+
+  TypeCDNOAC:
+    Description: The type of origin that this origin access control is for
+    Type: String
+    Default: s3
+
+  SigningBehaviorCDNOAC:
+    Description: Specifies which requests CloudFront signs
+    Type: String
+    Default: always
+
+Resources:
+  CloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: !Ref DescriptionCDNOAC
+        Name: !Ref NameCDNOriginACL
+        OriginAccessControlOriginType: !Ref TypeCDNOAC
+        SigningBehavior: !Ref SigningBehaviorCDNOAC
+        SigningProtocol: sigv4
+
+Outputs:
+  id:
+    Value: !Fn::GetAtt CloudFrontOriginAccessControl.Id
+    Decription: The ID of the Origin Access Control CloudFront.

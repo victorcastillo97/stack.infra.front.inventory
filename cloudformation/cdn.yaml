@@ -1,0 +1,49 @@
+Parameters:
+  EnabledCdn:
+    Description: From this field, you can enable or disable the selected distribution.
+    Type: String
+    Default: true
+
+  DefaultRootObjectCdn:
+    Description: The object that you want CloudFront to request from your origin
+    Type: String
+    Default: index.html
+
+  HttpVersionCdn:
+    Description: Specify the maximum HTTP version(s) that you want viewers to use to communicate with CloudFront
+    Type: String
+    Default: http2
+
+  AllowedMethodsCache:
+    Description: A complex type that controls which HTTP methods CloudFront processes and forwards to your Amazon S3 bucket or your custom origin.
+    Type: String
+    Default: 'GET,HEAD'
+
+  ViewerProtocolPolicyCache:
+    Description: El protocolo que los espectadores pueden usar para acceder a los archivos en el origen especificado TargetOriginId.
+    Type: String
+    Default: allow-all
+
+Resources:
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: inventory.web.front.dev.bucket.s3.us-west-2.amazonaws.com
+            Id: inventory.web.front.dev.bucket.s3.us-west-2.amazonaws.com
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: E5GPCAG6TR01N
+        Enabled: !Ref EnabledCdn
+        DefaultRootObject: !Ref DefaultRootObjectCdn
+        HttpVersion: !Ref HttpVersionCdn
+        DefaultCacheBehavior:
+          AllowedMethods: 
+            Fn::Split:
+              - ","
+              - !Ref AllowedMethodsCache
+          Compress: true
+          TargetOriginId: inventory.web.front.dev.bucket.s3.us-west-2.amazonaws.com
+          ViewerProtocolPolicy: !Ref ViewerProtocolPolicyCache
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6

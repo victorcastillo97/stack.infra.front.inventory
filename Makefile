@@ -1,5 +1,6 @@
 
 include makefiles/buckets3.mk
+include makefiles/stack.mk
 
 OWNER          	= inventory
 TYPE_APP        = web
@@ -8,11 +9,9 @@ ENV             ?= dev
 AWS_REGION 		= us-west-2
 
 PROJECT_NAME    = ${OWNER}-${TYPE_APP}-${SERVICE_NAME}-${ENV}
-
 BUCKET_NAME 	= ${OWNER}.${TYPE_APP}.${SERVICE_NAME}.${ENV}.bucket
 
 
-BUCKET_S3		= dev.
 STACK_NAME		= bucketWebsite
 TEMPLATE_FILE	= cloudformation/templates/bucketWebsite.yaml
 
@@ -30,5 +29,6 @@ create.stack:
 
 delete.stack:
 	@ aws cloudformation delete-stack --stack-name $(STACK_NAME)
+	
 	@ aws cloudformation wait stack-delete-complete  \
 	--stack-name $(STACK_NAME)

@@ -11,15 +11,12 @@ Resources:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: !Ref BucketS3Name
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: error.html
 
 Outputs:
-  BucketName:
+  Name:
     Value: !Ref 'S3Bucket'
     Description: Name of S3 bucket
 
-  WebsiteURL:
-    Value: !GetAtt 'S3Bucket.WebsiteURL'
+  RegionalDomainName:
+    Value: !GetAtt 'S3Bucket.RegionalDomainName'
     Description: Bucket website endpoint

@@ -2,6 +2,11 @@ Parameters:
   BucketS3Name:
     Description: Name of the bucket
     Type: String
+ 
+  NameCachePolicy:
+    Description: A unique name to identify the cache policy.
+    Type: String
+    Default: CachingOptimized
 
 Resources:
   BucketS3:
@@ -10,3 +15,26 @@ Resources:
       TemplateURL: "./templates/bucket_website.yaml"
       Parameters:
         BucketS3Name: !Ref BucketS3Name
+  
+  CloudFrontOriginAcl:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "./templates/cloudfrontOriginACL.yaml"
+      Parameters:
+        NameCDNOriginACL: !GetAtt BucketS3.Outputs.DomainName
+  
+  CloudFrontCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    DeletionPolicy: Retain
+    Properties:
+      CachePolicyConfig:
+        Name: !Ref NameCachePolicy
+  
+  CloudFront:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "./templates/cloudfront.yaml"
+      Parameters:
+        DomainName: !GetAtt BucketS3.Outputs.WebsiteURL
+        CDNOriginAccessControlId: !GetAtt CloudFrontOriginAcl.Outputs.id
+        CachePolicyId: !Ref CloudFrontCachePolicy

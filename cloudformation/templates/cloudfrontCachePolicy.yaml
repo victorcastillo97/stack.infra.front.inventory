@@ -1,0 +1,17 @@
+Parameters:
+  NameCachePolicy:
+    Description: A unique name to identify the cache policy.
+    Type: String
+
+Resources:
+  CloudFrontCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    DeletionPolicy: Retain
+    Properties:
+      CachePolicyConfig:
+        Name: !Ref NameCachePolicy
+
+Outputs:
+  id:
+    Value: !Ref CloudFrontCachePolicy
+    Description: The URL of the newly created subdomain
