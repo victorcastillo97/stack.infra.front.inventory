@@ -10,7 +10,7 @@ AWS_REGION 		= us-west-2
 
 PROJECT_NAME    = ${OWNER}-${TYPE_APP}-${SERVICE_NAME}-${ENV}
 BUCKET_NAME 	= ${OWNER}.${TYPE_APP}.${SERVICE_NAME}.${ENV}.bucket
-
+BUCKET_INFRA	= infra.stacks.${ENV}
 
 STACK_NAME		= bucketWebsite
 TEMPLATE_FILE	= cloudformation/templates/bucketWebsite.yaml

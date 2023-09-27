@@ -17,6 +17,10 @@ Outputs:
     Value: !Ref 'S3Bucket'
     Description: Name of S3 bucket
 
+  Arn:
+    Value: !GetAtt 'S3Bucket.Arn'
+    Description: Arn of S3 bucket
+
   RegionalDomainName:
     Value: !GetAtt 'S3Bucket.RegionalDomainName'
     Description: Bucket website endpoint

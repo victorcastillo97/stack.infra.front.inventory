@@ -1,40 +1,75 @@
 Parameters:
+  BucketS3PathStack:
+    Description: Name of the bucket
+    Type: String
+  
   BucketS3Name:
     Description: Name of the bucket
     Type: String
  
-  NameCachePolicy:
-    Description: A unique name to identify the cache policy.
+  CloudFrontCachePolicyId:
+    Description: ID to identify the cache policy.
     Type: String
-    Default: CachingOptimized
-
+  
 Resources:
   BucketS3:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: "./templates/bucket_website.yaml"
+      TemplateURL: !Join
+        - ""
+        - - "https://s3"
+          - !Sub ".${AWS::Region}"
+          - !Sub ".amazonaws.com/${BucketS3PathStack}/bucketS3.yaml"
       Parameters:
         BucketS3Name: !Ref BucketS3Name
-  
+
   CloudFrontOriginAcl:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: "./templates/cloudfrontOriginACL.yaml"
+      TemplateURL: !Join
+        - ""
+        - - "https://s3"
+          - !Sub ".${AWS::Region}"
+          - !Sub ".amazonaws.com/${BucketS3PathStack}/cloudfrontOriginACL.yaml"
       Parameters:
-        NameCDNOriginACL: !GetAtt BucketS3.Outputs.DomainName
-  
-  CloudFrontCachePolicy:
-    Type: AWS::CloudFront::CachePolicy
-    DeletionPolicy: Retain
-    Properties:
-      CachePolicyConfig:
-        Name: !Ref NameCachePolicy
+        NameCDNOriginACL: !GetAtt BucketS3.Outputs.RegionalDomainName
   
   CloudFront:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: "./templates/cloudfront.yaml"
+      TemplateURL: !Join
+        - ""
+        - - "https://s3"
+          - !Sub ".${AWS::Region}"
+          - !Sub ".amazonaws.com/${BucketS3PathStack}/cloudfront.yaml"
       Parameters:
-        DomainName: !GetAtt BucketS3.Outputs.WebsiteURL
+        DomainName: !GetAtt BucketS3.Outputs.RegionalDomainName
         CDNOriginAccessControlId: !GetAtt CloudFrontOriginAcl.Outputs.id
-        CachePolicyId: !Ref CloudFrontCachePolicy
+        CachePolicyId: !Ref CloudFrontCachePolicyId
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !GetAtt BucketS3.Outputs.Name
+      PolicyDocument:
+        Version: '2008-10-17'
+        Id: PolicyForCloudFrontPrivateContent
+        Statement:   
+          Sid: AllowCloudFrontServicePrincipal
+          Effect: Allow
+          Principal: 
+              Service: cloudfront.amazonaws.com
+          Action:
+            - 's3:GetObject'
+          Resource: !Join
+            - ""
+            - - !GetAtt BucketS3.Outputs.Arn
+              - "/*"
+          Condition: 
+              StringEquals:
+                AWS:SourceArn: !Join
+                  - ""
+                  - - 'arn:aws:cloudfront::'
+                    - !Sub '${AWS::AccountId}:distribution/'
+                    - !GetAtt CloudFront.Outputs.Id
+

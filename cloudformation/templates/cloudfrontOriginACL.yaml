@@ -6,6 +6,7 @@ Parameters:
   DescriptionCDNOAC:
     Description: A description of the origin access control
     Type: String
+    Default: ''
 
   TypeCDNOAC:
     Description: The type of origin that this origin access control is for
@@ -30,5 +31,5 @@ Resources:
 
 Outputs:
   id:
-    Value: !Fn::GetAtt CloudFrontOriginAccessControl.Id
-    Decription: The ID of the Origin Access Control CloudFront.
+    Value: !GetAtt CloudFrontOriginAccessControl.Id
+    Description: The ID of the Origin Access Control CloudFront.
