@@ -73,3 +73,7 @@ Outputs:
   Id:
     Value: !Ref CloudFrontDistribution
     Description: The id of the CloudFront
+
+  DomainName:
+    Value: !GetAtt CloudFrontDistribution.DomainName
+    Description: The domain name of the resource, such as d111111abcdef8.cloudfront.ne

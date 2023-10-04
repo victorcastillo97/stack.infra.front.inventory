@@ -1,0 +1,24 @@
+Parameters:
+  DomainName:
+    Description: Domain Name to Certificate
+    Type: String
+
+  HostedZoneId:
+    Description: The HostedZoneId option, which is available if you are using Route 53 as your domain registrar, causes ACM to add your CNAME to the domain record. 
+    Type: String
+
+  DNSName:
+    Description: Specify the domain name that CloudFront assigned when you created your distribution.
+    Type: String
+
+Resources:
+  myDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId : !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !Ref DNSName
+        HostedZoneId: Z2FDTNDATAQYW2 #Hosted Zone from cloudfront
+      

@@ -32,3 +32,9 @@ delete.stack:
 	
 	@ aws cloudformation wait stack-delete-complete  \
 	--stack-name $(STACK_NAME)
+
+create.cert: 
+	@ aws cloudformation create-stack --stack-name certificate \
+	--template-body file://./cloudformation/certificate.yaml
+delete.cert:
+	@ aws cloudformation delete-stack --stack-name certificate

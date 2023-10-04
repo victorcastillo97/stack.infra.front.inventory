@@ -10,6 +10,14 @@ Parameters:
   CloudFrontCachePolicyId:
     Description: ID to identify the cache policy.
     Type: String
+
+  DomainName:
+    Description: Name of the domain
+    Type: String
+
+  HostedZoneId:
+    Description: ID to identify the hosted zone from domain.
+    Type: String
   
 Resources:
   BucketS3:
@@ -73,3 +81,29 @@ Resources:
                     - !Sub '${AWS::AccountId}:distribution/'
                     - !GetAtt CloudFront.Outputs.Id
 
+    Certificate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://s3"
+          - !Sub ".${AWS::Region}"
+          - !Sub ".amazonaws.com/${BucketS3PathStack}/certificate.yaml"
+      Parameters:
+        DomainName: !Ref DomainName
+        AlternativeDomainNames: 
+          - "*.${DomainName}."
+        HostedZoneId: !Ref HostedZoneId
+
+    Recordset:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://s3"
+          - !Sub ".${AWS::Region}"
+          - !Sub ".amazonaws.com/${BucketS3PathStack}/recordset.yaml"
+      Parameters:
+        DomainName: !Ref DomainName
+        HostedZoneId: !Ref HostedZoneId
+        DNSName: !GetAtt CloudFront.Outputs.DomainName

@@ -1,0 +1,26 @@
+Parameters:
+  DomainName:
+    Description: Domain Name to Certificate
+    Type: String
+
+  AlternativeDomainNames:
+    Description: Alternative domain name to certificate
+    Type: String
+
+  HostedZoneId:
+    Description: The HostedZoneId option, which is available if you are using Route 53 as your domain registrar, causes ACM to add your CNAME to the domain record. 
+    Type: String
+
+Resources:
+  ACMCertificate:
+      Type: "AWS::CertificateManager::Certificate"
+      Properties: 
+        DomainName: !Ref DomainName
+        SubjectAlternativeNames:
+          Fn::Split:
+            - ","
+            - !Ref AlternativeDomainNames
+        DomainValidationOptions:
+          - DomainName: !Ref DomainName
+            HostedZoneId: !Ref HostedZoneId
+        ValidationMethod: DNS
