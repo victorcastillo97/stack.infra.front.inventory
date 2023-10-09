@@ -1,0 +1,39 @@
+Parameters:
+  BucketS3Name:
+    Description: Name of the bucket
+    Type: String
+
+  BucketS3ARN:
+    Description: ARN of the bucket
+    Type: String
+  
+  CloudfrontId:
+    Description: ID of the cloudfront
+    Type: String
+
+Resources:
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref BucketS3Name
+      PolicyDocument:
+        Version: '2008-10-17'
+        Id: PolicyForCloudFrontPrivateContent
+        Statement:   
+          Sid: AllowCloudFrontServicePrincipal
+          Effect: Allow
+          Principal: 
+              Service: cloudfront.amazonaws.com
+          Action:
+            - 's3:GetObject'
+          Resource: !Join
+            - ""
+            - - !Ref BucketS3ARN
+              - "/*"
+          Condition: 
+              StringEquals:
+                AWS:SourceArn: !Join
+                  - ""
+                  - - 'arn:aws:cloudfront::'
+                    - !Sub '${AWS::AccountId}:distribution/'
+                    - !Ref CloudfrontId

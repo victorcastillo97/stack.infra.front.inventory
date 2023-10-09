@@ -13,14 +13,18 @@ Parameters:
 
 Resources:
   ACMCertificate:
-      Type: "AWS::CertificateManager::Certificate"
-      Properties: 
-        DomainName: !Ref DomainName
-        SubjectAlternativeNames:
-          Fn::Split:
-            - ","
-            - !Ref AlternativeDomainNames
-        DomainValidationOptions:
-          - DomainName: !Ref DomainName
-            HostedZoneId: !Ref HostedZoneId
-        ValidationMethod: DNS
+    Type: "AWS::CertificateManager::Certificate"
+    Properties: 
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames: !Split
+        - ","
+        - !Ref AlternativeDomainNames
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          HostedZoneId: !Ref HostedZoneId
+      ValidationMethod: DNS
+
+Outputs:
+  ARN:
+    Value: !Ref ACMCertificate
+    Description: returns the certificate's Amazon Resource Name (ARN).

@@ -2,6 +2,10 @@ Parameters:
   DomainName:
     Description: The domain name for the origin.
     Type: String
+  
+  AlternativeDomainNames:
+    Description: The domain alternative names to cloudfront.
+    Type: String
 
   IdOrigin:
     Description: A unique identifier for the origin. This value must be unique within the distribution. 
@@ -41,6 +45,9 @@ Parameters:
     Description: The unique identifier of the cache policy that is attached to the default cache behavior.
     Type: String
 
+  CertificateArn:
+    Description: Arn del Certificatado
+    Type: String
 
 Conditions:
   NotValueIdOrigin: !Equals ['', !Ref IdOrigin]
@@ -60,14 +67,20 @@ Resources:
         DefaultRootObject: !Ref DefaultRootObjectCdn
         HttpVersion: !Ref HttpVersionCdn
         DefaultCacheBehavior:
-          AllowedMethods: 
-            Fn::Split:
-              - ","
-              - !Ref AllowedMethodsCache
+          AllowedMethods: !Split
+            - ","
+            - !Ref AllowedMethodsCache
           Compress: true
           TargetOriginId: !If [ NotValueIdOrigin, !Ref DomainName, !Ref IdOrigin]
           ViewerProtocolPolicy: !Ref ViewerProtocolPolicyCache
           CachePolicyId: !Ref CachePolicyId
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertificateArn
+          MinimumProtocolVersion: TLSv1.2_2019
+          SslSupportMethod: sni-only
+        Aliases: !Split
+          - ","
+          - !Ref AlternativeDomainNames
 
 Outputs:
   Id:

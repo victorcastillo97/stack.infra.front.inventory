@@ -1,10 +1,10 @@
 Parameters:
-  BucketS3PathStack:
-    Description: Name of the bucket
+  StackFilesRegion:
+    Description: Region from stack files
     Type: String
-  
-  BucketS3Name:
-    Description: Name of the bucket
+
+  StackFilesPathTemplates:
+    Description: Path from Files templates stacks
     Type: String
  
   CloudFrontCachePolicyId:
@@ -18,29 +18,30 @@ Parameters:
   HostedZoneId:
     Description: ID to identify the hosted zone from domain.
     Type: String
+
+  BucketWebName:
+    Description: Name of S3 bucket
+    Type: String
+
+  BucketWebArn:
+    Description: Arn of S3 bucket
+    Type: String
+
+  BucketWebRegionalDomainName:
+    Description: Bucket website endpoint
+    Type: String
   
 Resources:
-  BucketS3:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Join
-        - ""
-        - - "https://s3"
-          - !Sub ".${AWS::Region}"
-          - !Sub ".amazonaws.com/${BucketS3PathStack}/bucketS3.yaml"
-      Parameters:
-        BucketS3Name: !Ref BucketS3Name
-
   CloudFrontOriginAcl:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Join
         - ""
         - - "https://s3"
-          - !Sub ".${AWS::Region}"
-          - !Sub ".amazonaws.com/${BucketS3PathStack}/cloudfrontOriginACL.yaml"
+          - !Sub ".${StackFilesRegion}"
+          - !Sub ".amazonaws.com/${StackFilesPathTemplates}/cloudfrontOriginACL.yaml"
       Parameters:
-        NameCDNOriginACL: !GetAtt BucketS3.Outputs.RegionalDomainName
+        NameCDNOriginACL: !Ref BucketWebRegionalDomainName
   
   CloudFront:
     Type: AWS::CloudFormation::Stack
@@ -48,61 +49,49 @@ Resources:
       TemplateURL: !Join
         - ""
         - - "https://s3"
-          - !Sub ".${AWS::Region}"
-          - !Sub ".amazonaws.com/${BucketS3PathStack}/cloudfront.yaml"
+          - !Sub ".${StackFilesRegion}"
+          - !Sub ".amazonaws.com/${StackFilesPathTemplates}/cloudfront.yaml"
       Parameters:
-        DomainName: !GetAtt BucketS3.Outputs.RegionalDomainName
+        DomainName: !Ref BucketWebRegionalDomainName
         CDNOriginAccessControlId: !GetAtt CloudFrontOriginAcl.Outputs.id
         CachePolicyId: !Ref CloudFrontCachePolicyId
+        AlternativeDomainNames: !Ref DomainName
+        CertificateArn: !GetAtt Certificate.Outputs.ARN
 
-  BucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties: 
-      Bucket: !GetAtt BucketS3.Outputs.Name
-      PolicyDocument:
-        Version: '2008-10-17'
-        Id: PolicyForCloudFrontPrivateContent
-        Statement:   
-          Sid: AllowCloudFrontServicePrincipal
-          Effect: Allow
-          Principal: 
-              Service: cloudfront.amazonaws.com
-          Action:
-            - 's3:GetObject'
-          Resource: !Join
-            - ""
-            - - !GetAtt BucketS3.Outputs.Arn
-              - "/*"
-          Condition: 
-              StringEquals:
-                AWS:SourceArn: !Join
-                  - ""
-                  - - 'arn:aws:cloudfront::'
-                    - !Sub '${AWS::AccountId}:distribution/'
-                    - !GetAtt CloudFront.Outputs.Id
-
-    Certificate:
+  PolicyCloudfrontToS3:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Join
         - ""
         - - "https://s3"
-          - !Sub ".${AWS::Region}"
-          - !Sub ".amazonaws.com/${BucketS3PathStack}/certificate.yaml"
+          - !Sub ".${StackFilesRegion}"
+          - !Sub ".amazonaws.com/${StackFilesPathTemplates}/PolicyForCloudFrontPrivateContent.yaml"
+      Parameters:
+        BucketS3Name: !Ref BucketWebName
+        BucketS3ARN: !Ref BucketWebArn
+        CloudfrontId: !GetAtt CloudFront.Outputs.Id
+
+  Certificate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://s3"
+          - !Sub ".${StackFilesRegion}"
+          - !Sub ".amazonaws.com/${StackFilesPathTemplates}/certificate.yaml"
       Parameters:
         DomainName: !Ref DomainName
-        AlternativeDomainNames: 
-          - "*.${DomainName}."
+        AlternativeDomainNames: !Sub "*.${DomainName}"
         HostedZoneId: !Ref HostedZoneId
 
-    Recordset:
+  Recordset:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Join
         - ""
         - - "https://s3"
-          - !Sub ".${AWS::Region}"
-          - !Sub ".amazonaws.com/${BucketS3PathStack}/recordset.yaml"
+          - !Sub ".${StackFilesRegion}"
+          - !Sub ".amazonaws.com/${StackFilesPathTemplates}/recordset.yaml"
       Parameters:
         DomainName: !Ref DomainName
         HostedZoneId: !Ref HostedZoneId

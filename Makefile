@@ -1,3 +1,4 @@
+.DEFAULT_GOAL := help
 
 include makefiles/buckets3.mk
 include makefiles/stack.mk
@@ -6,35 +7,15 @@ OWNER          	= inventory
 TYPE_APP        = web
 SERVICE_NAME    = front
 ENV             ?= dev
-AWS_REGION 		= us-west-2
 
-PROJECT_NAME    = ${OWNER}-${TYPE_APP}-${SERVICE_NAME}-${ENV}
-BUCKET_NAME 	= ${OWNER}.${TYPE_APP}.${SERVICE_NAME}.${ENV}.bucket
-BUCKET_INFRA	= infra.stacks.${ENV}
+PROJECT_NAME    		= ${OWNER}-${TYPE_APP}-${SERVICE_NAME}-${ENV}
 
-STACK_NAME		= bucketWebsite
-TEMPLATE_FILE	= cloudformation/templates/bucketWebsite.yaml
+BUCKET_INFRA_REGION		= us-west-2
+BUCKET_INFRA			= infra.stacks.${ENV}.2
+BUCKET_INFRA_STACK_PATH	= ${BUCKET_INFRA}/cloudformation/${OWNER}/${ENV}/${PROJECT_NAME}
 
-APP_DIR 		= app
+DOMAIN_NAME			= victordevelop.com
 
 
-create.stack:
-	@ aws cloudformation create-stack --stack-name $(STACK_NAME) \
-	--template-body file://${CURDIR}/$(TEMPLATE_FILE) \
-	--parameters \
-		ParameterKey=BucketS3Name,ParameterValue=$(BUCKET_NAME)
-
-	@ aws cloudformation wait stack-create-complete  \
-	--stack-name $(STACK_NAME)
-
-delete.stack:
-	@ aws cloudformation delete-stack --stack-name $(STACK_NAME)
-	
-	@ aws cloudformation wait stack-delete-complete  \
-	--stack-name $(STACK_NAME)
-
-create.cert: 
-	@ aws cloudformation create-stack --stack-name certificate \
-	--template-body file://./cloudformation/certificate.yaml
-delete.cert:
-	@ aws cloudformation delete-stack --stack-name certificate
+perro: ## Goo
+	@ echo "Comandos disponibles:
